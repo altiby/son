@@ -9,7 +9,7 @@ import (
 
 const (
 	defaultAddr = ":39901"
-	defaultPath = "/_/metrics"
+	defaultPath = "/metrics"
 )
 
 // NewPrometheus is a workaround function that creates additional server

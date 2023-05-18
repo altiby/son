@@ -32,11 +32,34 @@ services:
       CONFIG: compose
     ports:
       - "8086:8086"
+      - "39901:39901"
     networks:
       - son-net
 
+  prometheus:
+    image: quay.io/prometheus/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    networks:
+      - son-net
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    volumes:
+      - "./grafana.ds.yml:/etc/grafana/provisioning/datasources/grafana.ds.yml"
+      - "grafana-data:/var/lib/grafana"
+    networks:
+      - son-net
+
+
 volumes:
   son-data:
+  grafana-data:
 
 networks:
   son-net:
