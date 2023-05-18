@@ -1,0 +1,6 @@
+# Ignore content from the `reports` directory. However track empty directory (`.gitkeep`).
+/reports/*
+!/reports/.gitkeep
+
+/vendor
+.idea

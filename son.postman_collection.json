@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "4c8710f1-1c44-4779-a3f0-8ab36bb7df16",
+		"name": "son",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/user/register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"first_name\": \"Timoshenko\",\n  \"second_name\": \"Aleksandr\",\n  \"birthdate\": \"2017-02-01\",\n  \"biography\": \"Programming\",\n  \"city\": \"Svetlogorsk\",\n  \"password\": \"Cnh@iysq G@ h0k\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/v1/user/register",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/user/login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id\": \"a3293fff-99cf-4664-83bd-c68fbc049f6d\",\n  \"password\": \"Cnh@iysq G@ h0k\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/v1/user/login",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/user/get/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/v1/user/get/a3293fff-99cf-4664-83bd-c68fbc049f6d",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"v1",
+						"user",
+						"get",
+						"a3293fff-99cf-4664-83bd-c68fbc049f6d"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:8086",
+			"type": "default"
+		}
+	]
+}

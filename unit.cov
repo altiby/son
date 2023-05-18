@@ -1,0 +1,25 @@
+mode: atomic
+github.com/altiby/son/internal/logger/entry.go:16.106,24.47 2 1
+github.com/altiby/son/internal/logger/entry.go:24.47,26.3 1 1
+github.com/altiby/son/internal/logger/entry.go:28.2,28.9 1 1
+github.com/altiby/son/internal/logger/entry.go:29.20,30.59 1 1
+github.com/altiby/son/internal/logger/entry.go:31.10,32.55 1 0
+github.com/altiby/son/internal/logger/entry.go:36.55,41.2 1 0
+github.com/altiby/son/internal/logger/formatter.go:19.70,21.17 2 4
+github.com/altiby/son/internal/logger/formatter.go:21.17,23.3 1 2
+github.com/altiby/son/internal/logger/formatter.go:25.2,35.77 3 4
+github.com/altiby/son/internal/logger/formatter.go:35.77,39.17 4 2
+github.com/altiby/son/internal/logger/formatter.go:39.17,41.4 1 0
+github.com/altiby/son/internal/logger/formatter.go:42.3,44.29 2 2
+github.com/altiby/son/internal/logger/formatter.go:47.2,54.15 3 4
+github.com/altiby/son/internal/logger/logger.go:27.36,30.26 2 8
+github.com/altiby/son/internal/logger/logger.go:30.26,32.3 1 0
+github.com/altiby/son/internal/logger/logger.go:34.2,37.16 3 8
+github.com/altiby/son/internal/logger/logger.go:37.16,39.3 1 2
+github.com/altiby/son/internal/logger/logger.go:41.2,41.16 1 6
+github.com/altiby/son/internal/logger/logger.go:44.42,46.16 2 8
+github.com/altiby/son/internal/logger/logger.go:46.16,48.3 1 2
+github.com/altiby/son/internal/logger/logger.go:50.2,52.12 2 6
+github.com/altiby/son/internal/logger/logger.go:55.61,57.2 1 1
+github.com/altiby/son/internal/logger/logger.go:59.61,60.71 1 1
+github.com/altiby/son/internal/logger/logger.go:60.71,75.3 6 1

@@ -1,0 +1,5 @@
+vendor/
+.vscode/
+go-build-common/
+reports/
+.env

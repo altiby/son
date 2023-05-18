@@ -1,0 +1,42 @@
+version: '3'
+services:
+  db:
+    image: "postgres:15"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "sondb"
+      POSTGRES_USER: "son_owner"
+      POSTGRES_PASSWORD: "Ih123hhsdt1nxxjg314C"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    networks:
+      - son-net
+
+  api:
+    build: .
+    container_name: api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      CONFIG: compose
+    ports:
+      - "8086:8086"
+    networks:
+      - son-net
+
+volumes:
+  son-data:
+
+networks:
+  son-net:

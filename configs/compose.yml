@@ -1,0 +1,22 @@
+environment: &environment local
+
+server:
+  port: 8086
+  logging:
+    level: trace
+    format: text
+  metrics:
+    port: 39901
+    app_name: son
+    path: /_/metrics
+    environment: *environment
+
+
+postgresql:
+  url: "postgres://db:5432/sondb?sslmode=disable"
+  username: son_owner
+  password: Ih123hhsdt1nxxjg314C
+  max_conns: 50
+  min_conns: 10
+  max_conn_idle_time: 1h
+  migration_dir: ./migrations
