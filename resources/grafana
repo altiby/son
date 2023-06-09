@@ -1,0 +1,6 @@
+rps
+sum(rate(requests_total{appName="son"}[$__interval])) by (handler)
+LA
+histogram_quantile(0.99, sum(rate(request_duration_seconds_bucket{appName="son", handler=~"$apihandler"}[$__interval])) by (le))
+histogram_quantile(0.95, sum(rate(request_duration_seconds_bucket{appName="son", handler=~"$apihandler"}[$__interval])) by (le))
+histogram_quantile(0.90, sum(rate(request_duration_seconds_bucket{appName="son", handler=~"$apihandler"}[$__interval])) by (le))

@@ -62,4 +62,12 @@ compose-up:
 compose-down:
 	docker-compose -f docker-compose.yml down -v
 
+compose-restart:
+	docker-compose -f docker-compose.yml down -v
+	docker-compose -f docker-compose.yml up -d
+
+compose-rebuild:
+	docker-compose -f docker-compose.yml down -v
+	docker-compose -f docker-compose.yml up --build -d
+
 

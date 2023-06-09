@@ -23,7 +23,9 @@ services:
       - son-net
 
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: ./son.Dockerfile
     container_name: api
     depends_on:
       db:
@@ -36,12 +38,27 @@ services:
     networks:
       - son-net
 
+  init:
+    build:
+      context: .
+      dockerfile: ./cli.Dockerfile
+    container_name: cli
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_started
+    environment:
+      CONFIG: compose
+    networks:
+      - son-net
+
   prometheus:
     image: quay.io/prometheus/prometheus:latest
     ports:
       - "9090:9090"
     volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
     networks:
       - son-net
 
@@ -51,7 +68,10 @@ services:
       - 3000:3000
     restart: unless-stopped
     volumes:
-      - "./grafana.ds.yml:/etc/grafana/provisioning/datasources/grafana.ds.yml"
+      - "./infrastructure/grafana/grafana.ds.yml:/etc/grafana/provisioning/datasources/grafana.ds.yml"
+      - "./infrastructure/grafana/local.yml:/etc/grafana/provisioning/dashboards/local.yml"
+      - "./infrastructure/grafana/go_process_dashboard.json:/var/lib/grafana/dashboards/go_process_dashboard.json"
+      - "./infrastructure/grafana/son-dashboard.json:/var/lib/grafana/dashboards/son-dashboard.json"
       - "grafana-data:/var/lib/grafana"
     networks:
       - son-net

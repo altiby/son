@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"net/url"
 	"time"
 
@@ -28,7 +30,7 @@ type Postgres struct {
 	db sqlx.ExtContext
 }
 
-func New(ctx context.Context, cfg *Config) (*Postgres, error) {
+func New(ctx context.Context, cfg Config) (*Postgres, error) {
 	const (
 		pingTimeout = 5 * time.Second
 	)
@@ -59,6 +61,38 @@ func New(ctx context.Context, cfg *Config) (*Postgres, error) {
 	db.SetConnMaxIdleTime(cfg.MaxConnIdleTime)
 
 	return &Postgres{db}, nil
+}
+
+func InitPostgresql(cfg Config) (*Postgres, error) {
+	// postgres
+	storage, err := New(context.TODO(), cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := storage.Connection()
+	if err != nil {
+		return nil, err
+	}
+
+	driver, err := postgres.WithInstance(conn.DB, &postgres.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		fmt.Sprintf("file://%s", cfg.MigrationDir),
+		"postgres", driver)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return nil, err
+	}
+
+	return storage, nil
 }
 
 func (p Postgres) Connection() (*sqlx.DB, error) {

@@ -2,19 +2,16 @@ package server
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"github.com/altiby/son/internal/config"
 	gometrics "github.com/altiby/son/internal/gometrics"
 	"github.com/altiby/son/internal/handlers"
 	"github.com/altiby/son/internal/hasher"
 	"github.com/altiby/son/internal/logger"
+	"github.com/altiby/son/internal/metrics"
 	"github.com/altiby/son/internal/storage"
 	"github.com/altiby/son/internal/user"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"net"
@@ -24,6 +21,7 @@ import (
 
 type Builder struct {
 	port    int
+	appName string
 	metrics gometrics.Metrics
 	logger  *logger.Log
 	ctx     context.Context
@@ -36,6 +34,11 @@ func New() *Builder {
 
 func (b *Builder) WithMetrics(m gometrics.Metrics) *Builder {
 	b.metrics = m
+	return b
+}
+
+func (b *Builder) WithAppName(n string) *Builder {
+	b.appName = n
 	return b
 }
 
@@ -60,35 +63,7 @@ func (b *Builder) WithConfig(cfg *config.Config) *Builder {
 }
 
 func (b *Builder) initPostgresql() (*storage.Postgres, error) {
-	// postgres
-	storage, err := storage.New(context.TODO(), &b.cfg.Postgresql)
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := storage.Connection()
-	if err != nil {
-		return nil, err
-	}
-
-	driver, err := postgres.WithInstance(conn.DB, &postgres.Config{})
-	if err != nil {
-		return nil, err
-	}
-
-	m, err := migrate.NewWithDatabaseInstance(
-		fmt.Sprintf("file://%s", b.cfg.Postgresql.MigrationDir),
-		"postgres", driver)
-	if err != nil {
-		return nil, err
-	}
-
-	err = m.Up()
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return nil, err
-	}
-
-	return storage, nil
+	return storage.InitPostgresql(b.cfg.Postgresql)
 }
 
 func (b *Builder) Build() (*http.Server, error) {
@@ -114,6 +89,16 @@ func (b *Builder) Build() (*http.Server, error) {
 	router.Route("/v1", func(r chi.Router) {
 		r.Mount("/user", userHandler)
 	})
+
+	router, err = metrics.InstrumentChiRouter(router, b.appName)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = metrics.NewPrometheus(b.appName)
+	if err != nil {
+		return nil, err
+	}
 
 	server := &http.Server{
 		Addr:    net.JoinHostPort("", strconv.Itoa(b.port)),

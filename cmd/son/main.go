@@ -15,7 +15,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/altiby/son/internal/config"
-	"github.com/altiby/son/internal/metrics"
 )
 
 const (
@@ -39,10 +38,6 @@ func main() {
 	}
 	log.Info().Msgf("log format '%s', log level '%s'", cf.Server.Logging.Format, cf.Server.Logging.Level)
 
-	if err = setupMetricsServer(); err != nil {
-		log.Fatal().Err(err).Msg("Could not setup metrics endpoints.")
-	}
-
 	sCh := listenToSignal()
 	ctx, cancel := context.WithCancel(context.Background())
 	go func(sCh <-chan os.Signal, cancel func()) {
@@ -51,6 +46,7 @@ func main() {
 	}(sCh, cancel)
 
 	s, err := server.New().
+		WithAppName(appName).
 		WithContext(context.Background()).
 		WithConfig(cf).
 		WithPort(cf.Server.Port).
@@ -108,13 +104,4 @@ func listenToSignal() <-chan os.Signal {
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 
 	return sig
-}
-
-func setupMetricsServer() error {
-	_, err := metrics.NewPrometheus(appName)
-	return err
-}
-
-func health(w http.ResponseWriter, r *http.Request) {
-	_, _ = w.Write([]byte("OK"))
 }

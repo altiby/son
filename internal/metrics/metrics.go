@@ -2,9 +2,10 @@ package metrics
 
 import (
 	metrics "github.com/altiby/son/internal/gometrics"
-	"net/http"
-
+	"github.com/go-chi/chi"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"net/http"
+	"strings"
 )
 
 const (
@@ -36,4 +37,20 @@ func NewPrometheus(appName string) (metrics.Metrics, error) {
 	default:
 		return metrics.NewPrometheusMetrics(appName), nil
 	}
+}
+
+func InstrumentChiRouter(router *chi.Mux, appName string) (*chi.Mux, error) {
+	hm := metrics.NewHandlerMetrics(appName)
+
+	rx := chi.NewRouter()
+	rx.Use(router.Middlewares()...)
+	err := chi.Walk(router, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		route = strings.TrimSuffix(strings.Replace(route, "/*/", "/", -1), "/")
+
+		rx.With(middlewares...).Method(method, route, hm.Handler(method, route, handler))
+
+		return nil
+	})
+
+	return rx, err
 }

@@ -12,6 +12,7 @@ const (
 	apiRequestsTotal       = "requests_total"
 	requestDurationSeconds = "request_duration_seconds"
 	responseSizeBytes      = "response_size_bytes"
+	requestSizeBytes       = "request_size_bytes"
 )
 
 // HandlerMetrics models the prometheus metrics for HTTP handlers
@@ -21,6 +22,7 @@ type HandlerMetrics struct {
 	counter       *prometheus.CounterVec
 	duration      *prometheus.HistogramVec
 	responseSize  *prometheus.HistogramVec
+	requestSize   *prometheus.HistogramVec
 }
 
 // NewHandlerMetrics initializes the HandlerMetrics
@@ -68,6 +70,18 @@ func NewHandlerMetrics(appName string) HandlerMetrics {
 			},
 			[]string{HandlerLabel, HTTPMethodLabel},
 		),
+
+		// requestSize has no labels, making it a zero-dimensional ObserverVec.
+		requestSize: prometheus.NewHistogramVec(
+			prometheus.HistogramOpts{
+				Name: requestSizeBytes,
+				Help: "A histogram of request sizes for requests.",
+				ConstLabels: prometheus.Labels{
+					AppNameLabel: appName,
+				},
+			},
+			[]string{HandlerLabel, HTTPMethodLabel},
+		),
 	}
 	// Ensuring the collectors to be registered only once
 	ensureRegister(hm.inFlightGauge, hm.counter, hm.duration, hm.responseSize)
@@ -77,6 +91,11 @@ func NewHandlerMetrics(appName string) HandlerMetrics {
 // Handler instruments the handlers with all the metrics, injecting the "handler" label by currying.
 func (hm HandlerMetrics) Handler(method string, path string, h http.Handler) http.Handler {
 	h = promhttp.InstrumentHandlerResponseSize(hm.responseSize.MustCurryWith(prometheus.Labels{
+		HandlerLabel:    path,
+		HTTPMethodLabel: method,
+	}), h)
+
+	h = promhttp.InstrumentHandlerRequestSize(hm.requestSize.MustCurryWith(prometheus.Labels{
 		HandlerLabel:    path,
 		HTTPMethodLabel: method,
 	}), h)
