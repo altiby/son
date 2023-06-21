@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/altiby/son/internal/domain"
 	"github.com/altiby/son/internal/protocol"
 	"github.com/go-chi/chi"
@@ -16,6 +17,7 @@ type UserService interface {
 	RegisterUser(ctx context.Context, user domain.User, password string) (domain.User, error)
 	AuthorizeUser(ctx context.Context, id string, password string) (domain.User, error)
 	GetUserByID(ctx context.Context, id string) (domain.User, error)
+	SearchUsers(ctx context.Context, firstName string, lastName string) ([]domain.User, error)
 }
 
 type UserHandler struct {
@@ -178,12 +180,60 @@ func (u *UserHandler) get(w http.ResponseWriter, r *http.Request) {
 	protocol.WriteOk(w, userResponse)
 }
 
+type SearchUserResponseItem struct {
+	FirstName  string `json:"first_name" validate:"nonzero,nonnil"`
+	SecondName string `json:"second_name" validate:"nonzero,nonnil"`
+	Birthdate  string `json:"birthdate" validate:"nonzero,nonnil"`
+	Biography  string `json:"biography" validate:"nonzero,nonnil"`
+	City       string `json:"city" validate:"nonzero,nonnil"`
+}
+
+func (r *SearchUserResponseItem) FromDomainUser(user domain.User) {
+	r.Biography = user.Biography
+	r.City = user.City
+	r.Birthdate = user.Birthdate
+	r.FirstName = user.FirstName
+	r.SecondName = user.SecondName
+}
+
+func (u *UserHandler) search(w http.ResponseWriter, r *http.Request) {
+	firstName := r.URL.Query().Get("first_name")
+	lastName := r.URL.Query().Get("last_name")
+
+	requestID := middleware.GetReqID(r.Context())
+
+	if len(firstName) == 0 || len(lastName) == 0 {
+		msg := fmt.Sprintf("search user failed, params is`t set. first_name=%s,last_name=%s", firstName, lastName)
+		log.Error().Msg(msg)
+		protocol.WriteError(w, requestID, http.StatusBadRequest, msg)
+		return
+	}
+
+	users, err := u.userService.SearchUsers(r.Context(), firstName, lastName)
+	if err != nil {
+		msg := "search user failed"
+		log.Err(err).Msg(msg)
+		protocol.WriteError(w, requestID, http.StatusInternalServerError, msg)
+		return
+	}
+
+	usersResponse := make([]SearchUserResponseItem, 0, len(users))
+	for _, user := range users {
+		userResponse := SearchUserResponseItem{}
+		userResponse.FromDomainUser(user)
+		usersResponse = append(usersResponse, userResponse)
+	}
+
+	protocol.WriteOk(w, usersResponse)
+}
+
 func NewUserHandler(service UserService) *UserHandler {
 	handler := &UserHandler{userService: service}
 	r := chi.NewRouter()
 	r.Post("/login", handler.login)
 	r.Post("/register", handler.register)
 	r.Get("/get/{id}", handler.get)
+	r.Get("/search", handler.search)
 	handler.router = r
 	return handler
 }

@@ -70,4 +70,9 @@ compose-rebuild:
 	docker-compose -f docker-compose.yml down -v
 	docker-compose -f docker-compose.yml up --build -d
 
+test-hw-2:
+	wrk -t1 -c1 -d30s --timeout 30s -s 'resources/wrk/search.lua' 'http://localhost:8086'
+	wrk -t10 -c10 -d30s --timeout 30s -s 'resources/wrk/search.lua' 'http://localhost:8086'
+	wrk -t100 -c100 -d30s --timeout 30s -s 'resources/wrk/search.lua' 'http://localhost:8086'
+
 

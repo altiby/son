@@ -89,6 +89,29 @@ func (u UserStorage) GetUserByID(ctx context.Context, id string) (domain.User, e
 	return dbUser.ToDomain(), err
 }
 
+func (u UserStorage) SearchUsers(ctx context.Context, firstName string, lastName string) ([]domain.User, error) {
+	var dbUsers []User
+	err := sqlx.SelectContext(
+		ctx,
+		u.postgres.db,
+		&dbUsers,
+		`SELECT id, role, first_name, second_name, birthdate, biography, city 
+				FROM users 
+				WHERE first_name LIKE $1 AND second_name LIKE $2`,
+		firstName+"%", lastName+"%")
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+
+	domainUsers := make([]domain.User, 0, len(dbUsers))
+	for _, dbUser := range dbUsers {
+		domainUsers = append(domainUsers, dbUser.ToDomain())
+	}
+
+	return domainUsers, err
+}
+
 func NewUserStorage(p *Postgres) *UserStorage {
 	return &UserStorage{postgres: p}
 }

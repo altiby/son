@@ -10,6 +10,7 @@ type Storage interface {
 	RegisterUser(ctx context.Context, user domain.User, password string) error
 	AuthorizeUser(ctx context.Context, id string, password string) (domain.User, error)
 	GetUserByID(ctx context.Context, id string) (domain.User, error)
+	SearchUsers(ctx context.Context, firstName string, lastName string) ([]domain.User, error)
 }
 
 type Hasher interface {
@@ -19,6 +20,10 @@ type Hasher interface {
 type Service struct {
 	storage Storage
 	hasher  Hasher
+}
+
+func (s Service) SearchUsers(ctx context.Context, firstName string, lastName string) ([]domain.User, error) {
+	return s.storage.SearchUsers(ctx, firstName, lastName)
 }
 
 func (s Service) RegisterUser(ctx context.Context, user domain.User, password string) (domain.User, error) {
